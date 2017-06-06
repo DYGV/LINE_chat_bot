@@ -1,0 +1,9 @@
+boto==2.45.0
+django-toolbelt==0.0.1
+gunicorn==19.6.0
+image==1.5.5
+Pillow==3.4.2
+qrcode==5.3
+python-firebase==1.2
+goolabs==0.3.0
+configparser==3.5.0

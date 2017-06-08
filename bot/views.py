@@ -24,23 +24,6 @@ def index(request):
     return HttpResponse(html)
 
 
-def image_url(reply_token,text):
-    text = text.strip("画像")
-    text = text.strip()
-    cls_reply = API_call.APIs()
-
-    payload = {
-        "replyToken": reply_token,
-        "messages": [
-            {
-                "type": "text",
-                "text": cls_reply.image_recognition_url(text)
-            }
-        ]
-    }
-    requests.post(REPLY_ENDPOINT, headers=HEADER,
-                  data=json.dumps(payload))
-    return image_url
 
 
 def qr(reply_token, text):
@@ -65,7 +48,7 @@ def qr(reply_token, text):
 
 
 def weather(reply_token, text):
-    cls = API_call.APIs()
+    cls = API_call.APIs(5)
     city, thumbmnail_url, id, info = cls.weather(text)
     payload = {
         "replyToken": reply_token,
@@ -104,7 +87,7 @@ def reply_text(reply_token, text, info):
     profile_url = "https://api.line.me/v2/bot/profile/" + info
     profile = requests.get(profile_url, headers=HEADER)
 
-    reply_class = API_call.APIs()
+    reply_class = API_call.APIs(0)
     reply = reply_class.reply(text, info, profile)
     payload = {
         "replyToken": reply_token,
@@ -143,7 +126,7 @@ def image(reply_token, content_id):
     uri = "https://api.line.me/v2/bot/message/" + content_id + "/content"
     r = requests.get(uri, headers=HEADER)
 
-    reply_class = API_call.APIs()
+    reply_class = API_call.APIs(6)
     image_bin = r.content
     res_image, caption = reply_class.image_recognition(image_bin)
 
@@ -191,12 +174,7 @@ def callback(request):
         if message_type == "text":
             text = e["message"]["text"]  # メッセージ取得
 
-            if "画像" in text:
-                if "www" in text or "http://":
-                    image_url(reply_token,text)
-                    return HttpResponse(text)
-
-            elif "http://" in text or "www" in text and ".com" in text or ".jp" in text or ".net" in text \
+            if "http://" in text or "www" in text and ".com" in text or ".jp" in text or ".net" in text \
                                                                        or ".info" in text or ".org" in text or ".co" in text:
                 qr(reply_token, text)
                 return HttpResponse(text)

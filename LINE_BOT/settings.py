@@ -32,7 +32,7 @@ SECRET_KEY = 'd(i!ea)bob41%hho-6-=xajbq%rv@)f)l82%)9cq862-05l)x='
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'quiet-cove-15094']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '<your app>']
 
 # Application definition
 

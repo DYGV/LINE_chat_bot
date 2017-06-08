@@ -8,7 +8,7 @@ from datetime import datetime
 sys.path.append('LINE_bot/modules')
 from modules import fragments, API_call, Config_Load
 
-load_ = Config_Load.C_Config().load(3)
+load_ = Config_Load.C_Config().load(2)
 REPLY_ENDPOINT = load_['reply_endpoint']
 ACCESS_TOKEN = load_['access_token']
 
@@ -24,13 +24,11 @@ def index(request):
     return HttpResponse(html)
 
 
-
-
 def qr(reply_token, text):
-
+    """textからQRコードを生成"""
     img = qrcode.make(text)  # "text"からQRコード生成
-    api = API_call.S3(img)
-    up = api.upload()
+    api = API_call.APIs(1)
+    up = api.upload(img)
 
     payload = {
         "replyToken": reply_token,
@@ -47,43 +45,8 @@ def qr(reply_token, text):
     return qr
 
 
-def weather(reply_token, text):
-    cls = API_call.APIs(5)
-    city, thumbmnail_url, id, info = cls.weather(text)
-    payload = {
-        "replyToken": reply_token,
-        "messages": [
-            {
-                "type": "template",
-                "altText": "天気",
-                "template": {
-                    "type": "carousel",
-                    "columns": [
-                        {
-                            "thumbnailImageUrl": thumbmnail_url,
-                            "title": city + "\n" + datetime.now().strftime("%m/%d %H:%M"),
-                            "text": info,
-                            "actions": [
-
-                                {
-                                    "type": "uri",
-                                    "label": "詳細を見る",
-                                    "uri": id
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        ]
-    }
-
-    requests.post(REPLY_ENDPOINT, headers=HEADER,
-                  data=json.dumps(payload))
-    return weather
-
-
 def reply_text(reply_token, text, info):
+    """docomo APIを使って返信"""
     profile_url = "https://api.line.me/v2/bot/profile/" + info
     profile = requests.get(profile_url, headers=HEADER)
 
@@ -95,7 +58,6 @@ def reply_text(reply_token, text, info):
             {
                 "type": "text",
                 "text": reply
-
             }
         ]
     }
@@ -105,6 +67,7 @@ def reply_text(reply_token, text, info):
 
 
 def sticker(reply_token):
+    """スタンプを返す"""
     pkg, stk = fragments.sticker_id()
     payload = {
         "replyToken": reply_token,
@@ -123,10 +86,11 @@ def sticker(reply_token):
 
 
 def image(reply_token, content_id):
+    """画像認識"""
     uri = "https://api.line.me/v2/bot/message/" + content_id + "/content"
     r = requests.get(uri, headers=HEADER)
 
-    reply_class = API_call.APIs(6)
+    reply_class = API_call.APIs(4)
     image_bin = r.content
     res_image, caption = reply_class.image_recognition(image_bin)
 
@@ -177,10 +141,6 @@ def callback(request):
             if "http://" in text or "www" in text and ".com" in text or ".jp" in text or ".net" in text \
                                                                        or ".info" in text or ".org" in text or ".co" in text:
                 qr(reply_token, text)
-                return HttpResponse(text)
-
-            if "気温" in text or "天気" in text or "教えて" in text:
-                weather(reply_token, text)
                 return HttpResponse(text)
 
             else:

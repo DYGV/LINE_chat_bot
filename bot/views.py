@@ -130,6 +130,7 @@ def image(reply_token, content_id):
 
 def callback(request):
     request_json = json.loads(request.body.decode("utf-8"))  # requestの情報を取得
+    words = ['http://', 'www', '.com', '.jp', '.net', '.info', '.org', '.co']
     for e in request_json["events"]:
         reply_token = e["replyToken"]  # get token
         message_type = e["message"]["type"]  # メッセージタイプ取得
@@ -137,15 +138,13 @@ def callback(request):
 
         if message_type == "text":
             text = e["message"]["text"]  # メッセージ取得
-
-            if "http://" in text or "www" in text and ".com" in text or ".jp" in text or ".net" in text \
-                                                                       or ".info" in text or ".org" in text or ".co" in text:
-                qr(reply_token, text)
-                return HttpResponse(text)
-
-            else:
-                reply_text(reply_token, text, info)
-                return HttpResponse(text)
+            for i in words:
+                if i in text:
+                    qr(reply_token, text)
+                    return HttpResponse(text)
+                else:
+                    reply_text(reply_token, text, info)
+                    return HttpResponse(text)
 
         if message_type == "sticker":
             sticker_id = e["message"]["stickerId"]
